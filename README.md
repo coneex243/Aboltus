@@ -7,6 +7,7 @@
   <img src="https://img.shields.io/badge/3D%20Avatar-Three.js%20%2F%20VRM-green?style=for-the-badge" alt="3D Avatar" />
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License" />
 </p>
+<img width="1376" height="931" alt="1232131232132131232132131231231" src="https://github.com/user-attachments/assets/f01a0571-9e46-4467-8d5c-3b73321ba638" />
 
 **«Аболтус»** — это продвинутый десктопный голосовой ассистент и интерактивный AI-компаньон для Windows с живым трехмерным оверлеем (3D VRM Аватар), локальной языковой моделью (Ollama), поддержкой клонированных голосов и удаленным управлением ПК через Telegram.
 
