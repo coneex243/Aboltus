@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Аболтус 3D Аватар</title>
+    <style>
+        html, body { 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            background: transparent !important;
+            user-select: none;
+        }
+        canvas { 
+            display: block; 
+            background: transparent !important;
+        }
+        #loading {
+            position: absolute; 
+            bottom: 20px; 
+            left: 20px;
+            color: #00f2fe; 
+            font-family: monospace; 
+            font-size: 12px; 
+            pointer-events: none;
+            text-shadow: 1px 1px 2px black; 
+            z-index: 999;
+            background: rgba(0,0,0,0.4);
+            padding: 5px 10px;
+            border-radius: 15px;
+        }
+        #model-selector {
+            position: absolute; 
+            bottom: 20px; 
+            right: 20px;
+            background: rgba(0,0,0,0.5); 
+            padding: 8px 15px;
+            border-radius: 20px; 
+            color: #00f2fe;
+            font-family: monospace; 
+            font-size: 12px;
+            pointer-events: auto; 
+            cursor: pointer;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            border: 1px solid #00f2fe;
+        }
+        #model-selector:hover {
+            background: rgba(0,242,254,0.3);
+        }
+        .model-list {
+            position: absolute;
+            bottom: 60px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 10px;
+            padding: 10px;
+            display: none;
+            z-index: 1001;
+            color: white;
+            font-family: monospace;
+            font-size: 11px;
+            border: 1px solid #00f2fe;
+        }
+        .model-list.show {
+            display: block;
+        }
+        .model-list div {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .model-list div:hover {
+            background: #00f2fe;
+            color: black;
+        }
+    </style>
+    
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.154.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.154.0/examples/jsm/",
+                "@pixiv/three-vrm": "https://unpkg.com/@pixiv/three-vrm@2.1.0/lib/three-vrm.module.js"
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <div id="loading">Загрузка модели...</div>
+    <div id="model-selector">🎨 Выбрать модель ▼</div>
+    <div class="model-list" id="model-list"></div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { VRMLoaderPlugin } from '@pixiv/three-vrm';
+
+        const loadingEl = document.getElementById('loading');
+        const modelSelector = document.getElementById('model-selector');
+        const modelListEl = document.getElementById('model-list');
+        
+        let availableModels = [];
+        let currentModelIndex = 0;
+        let currentVrm = null;
+        let currentScene = null;
+        let currentCamera = null;
+        let currentRenderer = null;
+        let isSpeaking = false;
+        let clock = new THREE.Clock();
+        
+        let blinkTimer = 0;
+        let nextBlinkTime = 2.5;
+        let blinkDuration = 0.12;
+        
+        const mousePosition = new THREE.Vector3(0, 1.2, 1.0);
+        
+        function createScene() {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 100.0);
+            camera.position.set(0.0, 0.9, 3.8);
+            camera.lookAt(0.0, 0.9, 0.0);
+            
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setClearColor(0x000000, 0);
+            
+            const canvases = document.querySelectorAll('canvas');
+            canvases.forEach(c => c.remove());
+            document.body.appendChild(renderer.domElement);
+            
+            // Освещение
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+            
+            const mainLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            mainLight.position.set(1.0, 2.0, 2.0);
+            scene.add(mainLight);
+            
+            const fillLight = new THREE.DirectionalLight(0x88aaff, 0.5);
+            fillLight.position.set(-0.5, 1.0, -1.0);
+            scene.add(fillLight);
+            
+            const backLight = new THREE.DirectionalLight(0xffaa88, 0.3);
+            backLight.position.set(0, 1.5, -1.5);
+            scene.add(backLight);
+            
+            return { scene, camera, renderer };
+        }
+        
+        function animateModel(vrm, deltaTime, elapsedTime, isSpeakingFlag) {
+            if (!vrm) return;
+            
+            vrm.update(deltaTime);
+            
+            const hips = vrm.humanoid?.getNormalizedBoneNode('hips');
+            const spine = vrm.humanoid?.getNormalizedBoneNode('spine');
+            const leftUpperArm = vrm.humanoid?.getNormalizedBoneNode('leftUpperArm');
+            const rightUpperArm = vrm.humanoid?.getNormalizedBoneNode('rightUpperArm');
+            const leftLowerArm = vrm.humanoid?.getNormalizedBoneNode('leftLowerArm');
+            const rightLowerArm = vrm.humanoid?.getNormalizedBoneNode('rightLowerArm');
+            
+            if (hips) {
+                hips.rotation.z = Math.sin(elapsedTime * 1.2) * 0.04;
+                hips.rotation.y = Math.cos(elapsedTime * 0.6) * 0.03;
+                hips.position.y = Math.abs(Math.sin(elapsedTime * 2.5)) * 0.008;
+            }
+            
+            if (spine) {
+                spine.rotation.z = -Math.sin(elapsedTime * 1.2) * 0.02;
+                spine.rotation.x = (Math.sin(elapsedTime * 1.5) * 0.01) + 0.005;
+            }
+            
+            if (leftUpperArm && rightUpperArm) {
+                leftUpperArm.rotation.z = 1.1 + Math.sin(elapsedTime * 1.2) * 0.02;
+                rightUpperArm.rotation.z = -1.1 - Math.sin(elapsedTime * 1.2) * 0.02;
+                leftUpperArm.rotation.x = Math.cos(elapsedTime * 1.0) * 0.03;
+                rightUpperArm.rotation.x = Math.sin(elapsedTime * 1.0) * 0.03;
+            }
+            
+            if (leftLowerArm && rightLowerArm) {
+                leftLowerArm.rotation.y = Math.sin(elapsedTime * 1.8) * 0.03;
+                rightLowerArm.rotation.y = Math.cos(elapsedTime * 1.8) * 0.03;
+            }
+            
+            if (vrm.lookAt) {
+                vrm.lookAt.lookAt(mousePosition);
+            }
+            
+            if (vrm.expressionManager) {
+                if (isSpeakingFlag) {
+                    const mouthOpen = Math.abs(Math.sin(elapsedTime * 12.0)) * 0.7 + (Math.random() * 0.1);
+                    vrm.expressionManager.setValue('aa', mouthOpen);
+                    vrm.expressionManager.setValue('happy', 0.25);
+                } else {
+                    vrm.expressionManager.setValue('aa', 0.0);
+                    vrm.expressionManager.setValue('happy', 0.0);
+                }
+                
+                blinkTimer += deltaTime;
+                if (blinkTimer >= nextBlinkTime) {
+                    let progress = (blinkTimer - nextBlinkTime) / blinkDuration;
+                    if (progress <= 0.5) {
+                        vrm.expressionManager.setValue('blink', progress / 0.5);
+                    } else if (progress <= 1.0) {
+                        vrm.expressionManager.setValue('blink', 1.0 - ((progress - 0.5) / 0.5));
+                    } else {
+                        vrm.expressionManager.setValue('blink', 0.0);
+                        blinkTimer = 0;
+                        nextBlinkTime = 2.0 + Math.random() * 4.0;
+                    }
+                }
+                
+                vrm.expressionManager.update();
+            }
+        }
+        
+        async function loadModel(modelPath) {
+            loadingEl.style.display = 'block';
+            loadingEl.innerText = `Загрузка ${modelPath}...`;
+            
+            const { scene, camera, renderer } = createScene();
+            currentScene = scene;
+            currentCamera = camera;
+            currentRenderer = renderer;
+            
+            const loader = new GLTFLoader();
+            loader.register((parser) => new VRMLoaderPlugin(parser));
+            
+            return new Promise((resolve, reject) => {
+                loader.load(
+                    modelPath,
+                    (gltf) => {
+                        const vrm = gltf.userData.vrm;
+                        if (!vrm) {
+                            reject(new Error("VRM модель не найдена"));
+                            return;
+                        }
+                        scene.add(vrm.scene);
+                        vrm.scene.rotation.y = Math.PI;
+                        loadingEl.style.display = 'none';
+                        resolve(vrm);
+                    },
+                    (progress) => {
+                        const percent = Math.round(progress.loaded / progress.total * 100);
+                        loadingEl.innerText = `${modelPath}: ${percent}%`;
+                    },
+                    (error) => {
+                        console.error(error);
+                        reject(error);
+                    }
+                );
+            });
+        }
+        
+        async function findAvailableModels() {
+            const testNames = ['avatar.vrm', 'avatar2.vrm', 'avatar3.vrm', 'avatar4.vrm', 'avatar5.vrm', 'model.vrm', 'character.vrm'];
+            const found = [];
+            
+            for (const name of testNames) {
+                try {
+                    const response = await fetch(name, { method: 'HEAD' });
+                    if (response.ok) {
+                        found.push({ name: name, path: name });
+                    }
+                } catch(e) {}
+            }
+            
+            if (found.length === 0) {
+                found.push({ name: 'avatar.vrm', path: 'avatar.vrm' });
+            }
+            
+            return found;
+        }
+        
+        async function switchModel(index) {
+            if (availableModels.length === 0) return;
+            if (index >= availableModels.length) index = 0;
+            currentModelIndex = index;
+            const model = availableModels[currentModelIndex];
+            
+            try {
+                const newVrm = await loadModel(model.path);
+                if (currentVrm && currentVrm.scene) {
+                    currentScene.remove(currentVrm.scene);
+                }
+                currentVrm = newVrm;
+                modelSelector.innerHTML = `🎨 ${model.name} ▼`;
+                
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ event: "change_model", model: model.name }));
+                }
+            } catch(e) {
+                console.error("Ошибка загрузки модели:", e);
+                loadingEl.innerText = `Ошибка: ${model.name}`;
+                setTimeout(() => switchModel((currentModelIndex + 1) % availableModels.length), 2000);
+            }
+        }
+        
+        function showModelList() {
+            modelListEl.innerHTML = '';
+            availableModels.forEach((model, idx) => {
+                const div = document.createElement('div');
+                div.textContent = model.name;
+                div.onclick = () => {
+                    modelListEl.classList.remove('show');
+                    switchModel(idx);
+                };
+                modelListEl.appendChild(div);
+            });
+            modelListEl.classList.toggle('show');
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            const deltaTime = clock.getDelta();
+            const elapsedTime = clock.getElapsedTime();
+            
+            if (currentVrm) {
+                animateModel(currentVrm, deltaTime, elapsedTime, isSpeaking);
+            }
+            
+            if (currentRenderer && currentScene && currentCamera) {
+                currentRenderer.render(currentScene, currentCamera);
+            }
+        }
+        
+        let ws = null;
+        
+        function connectWebSocket() {
+            ws = new WebSocket('ws://localhost:8765');
+            
+            ws.onopen = () => console.log('WebSocket connected');
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.action === "state_change") {
+                        isSpeaking = (data.state === "speaking");
+                    }
+                } catch(e) {}
+            };
+            ws.onclose = () => {
+                setTimeout(connectWebSocket, 3000);
+            };
+        }
+        
+        window.addEventListener('mousemove', (event) => {
+            mousePosition.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mousePosition.y = (-(event.clientY / window.innerHeight) * 2 + 1) + 0.9;
+        });
+        
+        window.addEventListener('resize', () => {
+            if (currentCamera) {
+                currentCamera.aspect = window.innerWidth / window.innerHeight;
+                currentCamera.updateProjectionMatrix();
+            }
+            if (currentRenderer) {
+                currentRenderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        });
+        
+        async function init() {
+            availableModels = await findAvailableModels();
+            
+            if (availableModels.length === 0) {
+                loadingEl.innerText = "Модели не найдены!";
+                return;
+            }
+            
+            await switchModel(0);
+            animate();
+            connectWebSocket();
+            
+            modelSelector.onclick = showModelList;
+            
+            document.addEventListener('click', (e) => {
+                if (!modelSelector.contains(e.target) && !modelListEl.contains(e.target)) {
+                    modelListEl.classList.remove('show');
+                }
+            });
+        }
+        
+        init();
+    </script>
+</body>
+</html>

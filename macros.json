@@ -1,0 +1,48 @@
+{
+  "открой блокнот": {
+    "actions": [
+      {
+        "type": "shell",
+        "value": "notepad.exe",
+        "delay": 0.2
+      }
+    ]
+  },
+  "проверь котировки": {
+    "actions": [
+      {
+        "type": "command",
+        "value": "курс доллара",
+        "delay": 0.1
+      }
+    ]
+  },
+  "газан": {
+    "type": "open_url",
+    "value": "https://www.youtube.com/watch?v=yo5CILhgvT4"
+  },
+  "мне плохо": {
+    "type": "open_url",
+    "value": "https://www.youtube.com/watch?v=iLFGQ5Zuw-w&t"
+  },
+  "включи пост панк": {
+    "type": "open_url",
+    "value": "https://www.youtube.com/watch?v=iLFGQ5Zuw-w&t"
+  },
+  "включи музыку": {
+    "type": "open_url",
+    "value": "https://soundcloud.com/sizorytube/kholodnye-steny-slowed-and-reverb"
+  },
+  "открой калькулятор": {
+    "type": "open_app",
+    "value": "calc.exe"
+  },
+  "отдых": {
+    "type": "open_url",
+    "value": "https://www.youtube.com/watch?v=M7CKRIozNYw&list=PLr6q1J68cd5EuXtV4Xk_sOdB7Y8ljFuPZ"
+  },
+  "открой гитхаб": {
+    "type": "open_url",
+    "value": "https://github.com"
+  }
+}

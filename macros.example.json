@@ -1,0 +1,36 @@
+{
+  "открой блокнот": {
+    "actions": [
+      {
+        "type": "shell",
+        "value": "notepad.exe",
+        "delay": 0.2
+      }
+    ]
+  },
+  "проверь котировки": {
+    "actions": [
+      {
+        "type": "command",
+        "value": "курс доллара",
+        "delay": 0.1
+      }
+    ]
+  },
+  "открой ютуб": {
+    "type": "open_url",
+    "value": "https://www.youtube.com"
+  },
+  "открой гитхаб": {
+    "type": "open_url",
+    "value": "https://github.com"
+  },
+  "включи музыку": {
+    "type": "open_url",
+    "value": "https://soundcloud.com"
+  },
+  "калькулятор": {
+    "type": "open_app",
+    "value": "calc.exe"
+  }
+}

@@ -1,0 +1,25 @@
+# Конфигурация голосового ассистента Аболтус
+assistant:
+  wake_word: "том"                # Слово для активации ассистента голосом (например: том, джарвис)
+  user_name: "сэр"                # Как ассистент обращается к вам
+  voice_profile: "dexter"         # Голосовой профиль: default (Edge TTS), dexter, zelensky, mell
+  tts_voice: "Зеленский (клон)"   # Название голоса по умолчанию
+  ironic_mode: 1                  # 1 - саркастичный/ироничный режим ответов нейросети, 0 - обычный
+
+startup:
+  auto_start: false               # Автозапуск при старте Windows
+
+stt:
+  mic_index: null                 # Индекс микрофона (null - по умолчанию)
+  sensitivity: 35                 # Чувствительность распознавания (порог тишины)
+
+tts:
+  engine: "edge-tts"              # Движок озвучки
+  voice: "ru-RU-SvetlanaNeural"   # Нейро-голос Microsoft Edge TTS
+  volume: 80                      # Громкость синтеза речи (в %)
+
+# Настройки удаленного управления через Telegram
+telegram:
+  token: "YOUR_TELEGRAM_BOT_TOKEN_HERE"   # Токен вашего бота от @BotFather (например: 123456789:ABCDefgh...)
+  password: "YOUR_SECRET_PASSWORD_HERE"   # Пароль для доступа к командам через бота
+  authorized_user_id: 0                   # Ваш числовой Telegram ID от @userinfobot (0 - вход только по паролю)

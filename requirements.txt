@@ -1,0 +1,39 @@
+# ============================================================
+# Зависимости голосового ассистента "Аболтус"
+# Python 3.10 - 3.12 (Windows 10/11)
+# ============================================================
+
+# Интерфейс пользователя (GUI) и 3D Аватар
+customtkinter>=5.2.0
+pywebview>=4.4.1
+Pillow>=10.0.0
+pystray>=0.19.5
+
+# Голосовые технологии (STT и TTS)
+edge-tts>=6.1.0
+pygame>=2.5.0
+sounddevice>=0.4.6
+numpy>=1.24.0
+vosk>=0.3.45
+
+# Управление системой Windows и мультимедиа
+pycaw>=20240210
+comtypes>=1.2.0
+pywin32>=306
+winshell>=0.6
+psutil>=5.9.0
+pygetwindow>=0.0.9
+
+# Сетевые сервисы, парсинг и утилиты
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+pytube>=15.0.0
+deep-translator>=1.11.4
+speedtest-cli>=2.1.3
+pyyaml>=6.0.1
+websockets>=12.0
+
+# Удаленное управление через Telegram-бот
+python-telegram-bot>=20.7
+SpeechRecognition>=3.10.0
+pydub>=0.25.1

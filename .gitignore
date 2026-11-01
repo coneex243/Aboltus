@@ -1,0 +1,79 @@
+# ============================================================
+# .gitignore для проекта "Аболтус"
+# ============================================================
+
+# Байткод Python и кэш
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Виртуальные окружения
+.venv/
+venv/
+ENV/
+env/
+*_env/
+rvc_env/
+tts_env/
+
+# Переменные окружения и секреты
+config.yaml
+!config.example.yaml
+.env
+.env.local
+.env.*.local
+*.secret
+*.token
+*.key
+*.bak
+
+# Системные файлы Windows и редакторов
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Временные файлы работы ассистента
+*.mp3
+*.ogg
+screenshot*.png
+tts_temp.mp3
+reply.mp3
+*.tmp
+*.log
+
+# Сохраняем готовые голосовые пакеты ассистента
+!clone_voices/aboltus_dexter/*.wav
+!clone_voices/aboltus_zelens/*.wav
+!clone_voices/aboltus_mell/*.wav
+
+# Тяжелые веса моделей обучения и сторонние среды (30+ ГБ)
+# Не загружаются на GitHub во избежание превышения лимитов (100MB / 2GB)
+clone_voices/GPT-SoVITS*/
+clone_voices/rvc/
+clone_voices/TTS/
+clone_voices/Retrieval-*/
+clone_voices/temp/
+clone_voices/output/
+clone_voices/1234/
+rvc_webui/
+VoiceCraft/
+rvc_models/
+*.pth
+*.pt
+*.onnx
+*.ckpt
+*.safetensors
+
+# Архивы и резервные копии
+archive_legacy/
+*.zip
+*.tar.gz
+*.rar
+*.7z
